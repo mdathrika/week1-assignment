@@ -3,6 +3,7 @@ import chainlit as cl
 import openai
 import base64
 from langsmith import traceable
+from prompt import SYSTEM_PROMPT
 
 api_key = os.getenv("OPENAI_API_KEY")
 
@@ -33,30 +34,8 @@ async def on_message(message: cl.Message):
     # Maintain an array of messages in the user session
     message_history = cl.user_session.get("message_history", [])
 
-    # Processing images exclusively
-    images = [file for file in message.elements if "image" in file.mime] if message.elements else []
-
-    if images:
-        # Read the first image and encode it to base64
-        with open(images[0].path, "rb") as f:
-            base64_image = base64.b64encode(f.read()).decode('utf-8')
-        message_history.append({
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": message.content if message.content else "What’s in this image?"
-                },
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": f"data:image/jpeg;base64,{base64_image}"
-                    }
-                }
-            ]
-        })
-    else:
-        message_history.append({"role": "user", "content": message.content})
+    message_history.insert(0, {"role": "system", "content": SYSTEM_PROMPT})
+    message_history.append({"role": "user", "content": message.content})
 
     response_message = cl.Message(content="")
     await response_message.send()
