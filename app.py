@@ -22,6 +22,8 @@ model_kwargs = {
     "max_tokens": 1000
 }
 
+cl.expose_port("0.0.0.0")
+
 # model_kwargs = {
 #     "model": "mistralai/Mistral-7B-Instruct-v0.3",
 #     "temperature": 0.3,
